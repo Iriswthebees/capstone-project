@@ -2,61 +2,75 @@ import { useState } from "react";
 import SearchBar from "../components/SearchBar";
 
 export default function Home() {
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // Temporary recipe data (replace later with API data)
+  const [recipes] = useState([
+    { id: 1, name: "Jollof Rice", cuisine: "African" },
+    { id: 2, name: "Pizza Margherita", cuisine: "Italian" },
+    { id: 3, name: "Sushi Rolls", cuisine: "Asian" },
+  ]);
 
-  async function handleSearch(searchTerm) {
-    setLoading(true);
-    setError(null);
-    setRecipes([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("");
 
-    try {
-      const response = await fetch(
-        `https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch recipes");
-      }
-
-      const data = await response.json();
-
-      if (!data.meals) {
-        setError("No recipes found. Try another search.");
-        return;
-      }
-
-      setRecipes(data.meals);
-    } catch (err) {
-      setError("Something went wrong. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
+  // 🔍 Handles search input
+  function handleSearch(query) {
+    setSearchQuery(query);
   }
 
+  // 🧭 Handles dropdown filter
+  function handleFilterChange(filter) {
+    setSelectedFilter(filter);
+  }
+
+  // 🧠 Filter logic (simple + readable)
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesSearch = recipe.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    const matchesFilter = selectedFilter
+      ? recipe.cuisine === selectedFilter
+      : true;
+
+    return matchesSearch && matchesFilter;
+  });
+
   return (
-    <main className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Cuisine International
+    <div className="min-h-screen bg-[#023535] px-4 py-8">
+      {/* Page heading */}
+      <h1 className="text-2xl font-bold text-[#F4ECE7] text-center mb-6">
+        Explore Recipes
       </h1>
 
-      <SearchBar onSearch={handleSearch} />
+      {/* Search bar */}
+      <SearchBar
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        filterOptions={["African", "Italian", "Asian"]}
+      />
 
-      {loading && (
-        <p className="text-center text-gray-600">Loading recipes...</p>
-      )}
-
-      {error && (
-        <p className="text-center text-red-500 font-medium">{error}</p>
-      )}
-
-      {/* Temporary debug output */}
-      {recipes.length > 0 && (
-        <pre className="mt-6 bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
-          {JSON.stringify(recipes, null, 2)}
-        </pre>
-      )}
-    </main>
+      {/* Results */}
+      <div className="mt-8 max-w-4xl mx-auto grid gap-4">
+        {filteredRecipes.length === 0 ? (
+          <p className="text-center text-[#F4ECE7]">
+            No recipes found.
+          </p>
+        ) : (
+          filteredRecipes.map((recipe) => (
+            <div
+              key={recipe.id}
+              className="bg-[#F4ECE7] p-4 rounded-lg shadow"
+            >
+              <h2 className="text-lg font-semibold text-black">
+                {recipe.name}
+              </h2>
+              <p className="text-sm text-gray-700">
+                Cuisine: {recipe.cuisine}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

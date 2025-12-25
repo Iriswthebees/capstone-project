@@ -1,43 +1,23 @@
-import { useState } from "react";
-
-export default function SearchBar({ onSearch }) {
-  const [query, setQuery] = useState("");
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) return;
-
-    onSearch(trimmedQuery);
-  }
-
+function SearchBar({ onSearch, onFilterChange }) {
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-xl mx-auto mb-6 px-4"
-    >
-      <label htmlFor="search" className="sr-only">
-        Search for a recipe
-      </label>
+    <div className="flex flex-col sm:flex-row gap-4 items-center">
+      <input
+        type="text"
+        placeholder="Search recipes..."
+        onChange={(e) => onSearch(e.target.value)}
+        className="px-4 py-2 rounded-lg w-full sm:w-64 bg-[#F4ECE7] text-black"
+      />
 
-      <div className="flex gap-2">
-        <input
-          id="search"
-          type="search"
-          placeholder="Search for a recipe..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-        />
-
-        <button
-          type="submit"
-          className="rounded-lg bg-orange-500 px-5 py-2 text-white font-medium hover:bg-orange-600 transition"
-        >
-          Search
-        </button>
-      </div>
-    </form>
+      <select
+        onChange={(e) => onFilterChange(e.target.value)}
+        className="px-4 py-2 rounded-lg bg-[#F4ECE7] text-black"
+      >
+        <option value="">Filter by</option>
+        <option value="cuisine">Cuisine</option>
+        <option value="mealType">Meal Type</option>
+      </select>
+    </div>
   );
 }
+
+export default SearchBar;
