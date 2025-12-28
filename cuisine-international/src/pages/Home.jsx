@@ -1,76 +1,103 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
+import RecipeCard from "../components/RecipeCard";
 
-export default function Home() {
-  // Temporary recipe data (replace later with API data)
-  const [recipes] = useState([
-    { id: 1, name: "Jollof Rice", cuisine: "African" },
-    { id: 2, name: "Pizza Margherita", cuisine: "Italian" },
-    { id: 3, name: "Sushi Rolls", cuisine: "Asian" },
-  ]);
+function Home() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [meals, setMeals] = useState([]);
+  const [filteredMeals, setFilteredMeals] = useState([]);
+  const [filterType, setFilterType] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("");
+  useEffect(() => {
+    if (!searchTerm) {
+      setMeals([]);
+      setFilteredMeals([]);
+      return;
+    }
 
-  // 🔍 Handles search input
-  function handleSearch(query) {
-    setSearchQuery(query);
-  }
+    const fetchMeals = async () => {
+      setLoading(true);
+      setError(null);
 
-  // 🧭 Handles dropdown filter
-  function handleFilterChange(filter) {
-    setSelectedFilter(filter);
-  }
+      try {
+        const response = await fetch(
+          `https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`
+        );
 
-  // 🧠 Filter logic (simple + readable)
-  const filteredRecipes = recipes.filter((recipe) => {
-    const matchesSearch = recipe.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+        if (!response.ok) {
+          throw new Error("Failed to fetch recipes");
+        }
 
-    const matchesFilter = selectedFilter
-      ? recipe.cuisine === selectedFilter
-      : true;
+        const data = await response.json();
+        const results = data.meals || [];
 
-    return matchesSearch && matchesFilter;
-  });
+        setMeals(results);
+        setFilteredMeals(results); // reset filters after fetch
+      } catch (err) {
+        setError(err.message);
+        setMeals([]);
+        setFilteredMeals([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeals();
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (!filterType) {
+      setFilteredMeals(meals);
+      return;
+    }
+
+    if (filterType === "cuisine") {
+      const uniqueByArea = meals.filter(
+        (meal, index, self) =>
+          index === self.findIndex((m) => m.strArea === meal.strArea)
+      );
+      setFilteredMeals(uniqueByArea);
+    }
+
+    if (filterType === "mealType") {
+      const uniqueByCategory = meals.filter(
+        (meal, index, self) =>
+          index === self.findIndex((m) => m.strCategory === meal.strCategory)
+      );
+      setFilteredMeals(uniqueByCategory);
+    }
+  }, [filterType, meals]);
 
   return (
-    <div className="min-h-screen bg-[#023535] px-4 py-8">
-      {/* Page heading */}
-      <h1 className="text-2xl font-bold text-[#F4ECE7] text-center mb-6">
-        Explore Recipes
-      </h1>
-
-      {/* Search bar */}
+    <div className="min-h-screen bg-[#023535] px-6 py-8">
       <SearchBar
-        onSearch={handleSearch}
-        onFilterChange={handleFilterChange}
-        filterOptions={["African", "Italian", "Asian"]}
+        onSearch={setSearchTerm}
+        onFilterChange={setFilterType}
       />
 
-      {/* Results */}
-      <div className="mt-8 max-w-4xl mx-auto grid gap-4">
-        {filteredRecipes.length === 0 ? (
-          <p className="text-center text-[#F4ECE7]">
-            No recipes found.
-          </p>
-        ) : (
-          filteredRecipes.map((recipe) => (
-            <div
-              key={recipe.id}
-              className="bg-[#F4ECE7] p-4 rounded-lg shadow"
-            >
-              <h2 className="text-lg font-semibold text-black">
-                {recipe.name}
-              </h2>
-              <p className="text-sm text-gray-700">
-                Cuisine: {recipe.cuisine}
-              </p>
-            </div>
-          ))
-        )}
+      {loading && (
+        <p className="text-white mt-6">Loading recipes...</p>
+      )}
+
+      {error && (
+        <p className="text-red-400 mt-6">{error}</p>
+      )}
+
+      {!loading && !error && filteredMeals.length === 0 && searchTerm && (
+        <p className="text-white mt-6">
+          No recipes found. Try another search.
+        </p>
+      )}
+
+      <div className="grid gap-6 mt-8 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredMeals.map((meal) => (
+          <RecipeCard key={meal.idMeal} meal={meal} />
+        ))}
       </div>
     </div>
   );
 }
+
+export default Home;
