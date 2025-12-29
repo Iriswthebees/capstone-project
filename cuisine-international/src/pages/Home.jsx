@@ -1,23 +1,22 @@
 import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
-import RecipeCard from "../components/RecipeCard";
+import RecipeList from "../components/RecipeList";
 
 function Home() {
+  const [recipes, setRecipes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [meals, setMeals] = useState([]);
-  const [filteredMeals, setFilteredMeals] = useState([]);
-  const [filterType, setFilterType] = useState("");
+  const [filterType, setFilterType] = useState(""); // "cuisine" | "meal type"
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // 🔹 Fetch recipes from MealDB
   useEffect(() => {
     if (!searchTerm) {
-      setMeals([]);
-      setFilteredMeals([]);
+      setRecipes([]);
       return;
     }
 
-    const fetchMeals = async () => {
+    const fetchRecipes = async () => {
       setLoading(true);
       setError(null);
 
@@ -25,77 +24,65 @@ function Home() {
         const response = await fetch(
           `https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`
         );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes");
-        }
-
         const data = await response.json();
-        const results = data.meals || [];
 
-        setMeals(results);
-        setFilteredMeals(results); // reset filters after fetch
+        // MealDB returns { meals: null } when no results
+        setRecipes(data.meals || []);
       } catch (err) {
-        setError(err.message);
-        setMeals([]);
-        setFilteredMeals([]);
+        setError("Something went wrong while fetching recipes.");
+        setRecipes([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMeals();
+    fetchRecipes();
   }, [searchTerm]);
 
-  useEffect(() => {
-    if (!filterType) {
-      setFilteredMeals(meals);
-      return;
-    }
+  // 🔹 Safe filter logic (NO disappearing UI)
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesSearch = recipe.strMeal
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    let matchesFilter = true;
 
     if (filterType === "cuisine") {
-      const uniqueByArea = meals.filter(
-        (meal, index, self) =>
-          index === self.findIndex((m) => m.strArea === meal.strArea)
-      );
-      setFilteredMeals(uniqueByArea);
+      matchesFilter = Boolean(recipe.strArea);
     }
 
-    if (filterType === "mealType") {
-      const uniqueByCategory = meals.filter(
-        (meal, index, self) =>
-          index === self.findIndex((m) => m.strCategory === meal.strCategory)
-      );
-      setFilteredMeals(uniqueByCategory);
+    if (filterType === "meal type") {
+      matchesFilter = Boolean(recipe.strCategory);
     }
-  }, [filterType, meals]);
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="min-h-screen bg-[#023535] px-6 py-8">
+    <div className="min-h-screen px-6 py-10" style={{ backgroundColor: "#023535" }}>
       <SearchBar
         onSearch={setSearchTerm}
         onFilterChange={setFilterType}
+        filterOptions={["cuisine", "meal type"]}
       />
 
       {loading && (
-        <p className="text-white mt-6">Loading recipes...</p>
+        <p className="text-center mt-8 text-white">Loading recipes...</p>
       )}
 
       {error && (
-        <p className="text-red-400 mt-6">{error}</p>
+        <p className="text-center mt-8 text-red-400">{error}</p>
       )}
 
-      {!loading && !error && filteredMeals.length === 0 && searchTerm && (
-        <p className="text-white mt-6">
-          No recipes found. Try another search.
+      {!loading && !error && filteredRecipes.length === 0 && searchTerm && (
+        <p className="text-center mt-10 text-white">
+          No recipes found.
         </p>
       )}
 
-      <div className="grid gap-6 mt-8 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredMeals.map((meal) => (
-          <RecipeCard key={meal.idMeal} meal={meal} />
-        ))}
-      </div>
+      {!loading && !error && filteredRecipes.length > 0 && (
+        <RecipeList recipes={filteredRecipes} />
+      )}
     </div>
   );
 }

@@ -1,44 +1,28 @@
 import { Link } from "react-router-dom";
 
-export default function RecipeCard({ meal }) {
-  if (!meal) return null;
-
-  const {
-    idMeal,
-    strMeal,
-    strMealThumb,
-    strCategory,
-    strArea,
-  } = meal;
-
+function RecipeCard({ recipe }) {
   return (
-    <Link to={`/recipe/${idMeal}`} className="block">
-      <article className="h-full rounded-xl overflow-hidden bg-[#023535] shadow-md hover:shadow-lg transition-shadow duration-300">
-        {/* Image */}
+    <Link to={`/recipe/${recipe.idMeal}`}>
+      <div
+        className="rounded-xl shadow-md p-4 cursor-pointer hover:scale-105 transition"
+        style={{ backgroundColor: "#F4ECE7" }} // button box color
+      >
         <img
-          src={strMealThumb}
-          alt={strMeal}
-          className="w-full h-48 object-cover"
-          loading="lazy"
+          src={recipe.strMealThumb}
+          alt={recipe.strMeal}
+          className="rounded-lg mb-3"
         />
 
-        {/* Content */}
-        <div className="p-4 bg-[#F4ECE7]">
-          <h2 className="text-lg font-semibold text-black mb-2">
-            {strMeal}
-          </h2>
+        <h3 className="font-semibold text-lg text-black">
+          {recipe.strMeal}
+        </h3>
 
-          <p className="text-sm text-black">
-            <span className="font-medium">Category:</span>{" "}
-            {strCategory || "Unknown"}
-          </p>
-
-          <p className="text-sm text-black">
-            <span className="font-medium">Cuisine:</span>{" "}
-            {strArea || "Unknown"}
-          </p>
-        </div>
-      </article>
+        <p className="text-sm text-gray-600">
+          {recipe.strArea} • {recipe.strCategory}
+        </p>
+      </div>
     </Link>
   );
 }
+
+export default RecipeCard;
