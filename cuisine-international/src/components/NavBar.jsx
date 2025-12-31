@@ -3,49 +3,74 @@ import { NavLink } from "react-router-dom";
 function NavBar() {
   return (
     <nav
-      className="w-full px-6 py-4 flex justify-between items-center"
-      style={{ backgroundColor: "#023535" }}
+      style={{
+        backgroundColor: "#023535",
+        padding: "16px 32px",
+      }}
     >
-      <h1 className="text-xl font-bold" style={{ color: "#F4511E" }}>
-        Cuisine International
-      </h1>
-
-      <div className="flex gap-6">
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `font-medium ${
-              isActive ? "underline" : ""
-            }`
-          }
-          style={{ color: "#F4ECE7" }}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between", // 👈 split left & right
+          alignItems: "center",
+        }}
+      >
+        {/* Brand / Title */}
+        <h1
+          style={{marginLeft: "18px",
+            color: "#F4ECE7",
+            fontSize: "18px",
+            margin: 0,
+          }}
         >
-          Home
-        </NavLink>
+          Cuisine International
+        </h1>
 
-        <NavLink
-          to="/about"
-          className={({ isActive }) =>
-            `font-medium ${
-              isActive ? "underline" : ""
-            }`
-          }
-          style={{ color: "#F4ECE7" }}
+        {/* Navigation links */}
+        <ul
+          style={{
+            display: "flex",
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+          }}
         >
-          About
-        </NavLink>
+          <li style={{ marginRight: "28px" }}>
+            <NavLink
+              to="/"
+              style={{ color: "#F4ECE7", textDecoration: "none" }}
+            >
+              Home
+            </NavLink>
+          </li>
 
-        <NavLink
-          to="/contact"
-          className={({ isActive }) =>
-            `font-medium ${
-              isActive ? "underline" : ""
-            }`
-          }
-          style={{ color: "#F4ECE7" }}
-        >
-          Contact
-        </NavLink>
+          <li style={{ marginRight: "28px" }}>
+            <NavLink
+              to="/favorites"
+              style={{ color: "#F4ECE7", textDecoration: "none" }}
+            >
+              Favorites
+            </NavLink>
+          </li>
+
+          <li style={{ marginRight: "28px" }}>
+            <NavLink
+              to="/about"
+              style={{ color: "#F4ECE7", textDecoration: "none" }}
+            >
+              About
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink
+              to="/contact"
+              style={{ color: "#F4ECE7", textDecoration: "none" }}
+            >
+              Contact
+            </NavLink>
+          </li>
+        </ul>
       </div>
     </nav>
   );

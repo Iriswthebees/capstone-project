@@ -2,6 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import Recipe from "./pages/Recipe";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Favorites from "./pages/Favorites";
 
 function App() {
   return (
@@ -11,10 +14,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/recipe/:id" element={<Recipe />} />
-
-        {/* Placeholder routes */}
-        <Route path="/about" element={<div className="p-10">About Page</div>} />
-        <Route path="/contact" element={<div className="p-10">Contact Page</div>} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/favorites" element={<Favorites />} />
       </Routes>
     </>
   );
