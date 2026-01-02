@@ -1,39 +1,52 @@
 import { useEffect, useState } from "react";
+import { getFavorites } from "../utils/favorites";
 import RecipeCard from "../components/RecipeCard";
 
 function Favorites() {
-  const [favorites, setFavorites] = useState([]);
+  const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(stored);
-  }, []);
+    async function fetchFavorites() {
+      const favoriteIds = getFavorites();
 
-  if (favorites.length === 0) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center text-white"
-        style={{ backgroundColor: "#023535" }}
-      >
-        No favorite recipes yet.
-      </div>
-    );
-  }
+      if (favoriteIds.length === 0) {
+        setRecipes([]);
+        return;
+      }
+
+      const requests = favoriteIds.map((id) =>
+        fetch(
+          `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`
+        ).then((res) => res.json())
+      );
+
+      const results = await Promise.all(requests);
+      const meals = results.map((r) => r.meals[0]);
+      setRecipes(meals);
+    }
+
+    fetchFavorites();
+  }, []);
 
   return (
     <div
-      className="min-h-screen px-6 py-10"
-      style={{ backgroundColor: "#023535" }}
+      style={{
+        padding: "32px",
+        backgroundColor: "#023535",
+        minHeight: "100vh",
+      }}
     >
-      <h1 className="text-3xl font-bold mb-8 text-white text-center">
-        My Favorites
-      </h1>
+      <h2 style={{ color: "#F4ECE7" }}>My Favorites</h2>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {favorites.map((recipe) => (
-          <RecipeCard key={recipe.idMeal} recipe={recipe} />
-        ))}
-      </div>
+      {recipes.length === 0 ? (
+        <p style={{ color: "#F4ECE7" }}>No favorites yet.</p>
+      ) : (
+        <div style={{ display: "grid", gap: "20px" }}>
+          {recipes.map((recipe) => (
+            <RecipeCard key={recipe.idMeal} recipe={recipe} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

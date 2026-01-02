@@ -19,7 +19,7 @@ function Contact() {
           <p>
             <strong>GitHub:</strong>{" "}
             <a
-              href="https://github.com"
+              href="https://github.com/Iriswthebees"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "#F4511E" }}
